@@ -8,7 +8,7 @@ A collection of agent skills for building great product interfaces (typography, 
 
 `teardown` carries its own checks. After changing anything under its `assets/` or `scripts/`, run every `node scripts/test-*.cjs` from that skill's directory. Then proof a few existing models with `scripts/proof.cjs` and look at the PNGs, since the tests cannot judge linework.
 
-`.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` define the plugin and its marketplace. Both are named `interfaces`, so plugin users invoke skills as `/interfaces:better-interface` while skills-CLI users invoke `/better-interface`. Skills are discovered from `skills/` automatically, so adding a skill needs no manifest change. Bump `version` in `plugin.json` in the same commit as any change under `skills/`. That number is the only signal plugin users update on. `claude plugin update` compares it and nothing else, so a change shipped without a bump reports "already at the latest version" and never reaches them. Run `claude plugin validate .` and `claude plugin validate .claude-plugin/plugin.json` after touching either manifest.
+`.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` define the plugin and its marketplace. The plugin remains `interfaces`; this local checkout uses the `interfaces-local` marketplace. Plugin users still invoke skills as `/interfaces:better-interface` while skills-CLI users invoke `/better-interface`. Skills are discovered from `skills/` automatically, so adding a skill needs no manifest change. Bump `version` in `plugin.json` in the same commit as any change under `skills/`. That number is the only signal plugin users update on. `claude plugin update` compares it and nothing else, so a change shipped without a bump reports "already at the latest version" and never reaches them. Run `claude plugin validate .` and `claude plugin validate .claude-plugin/plugin.json` after touching either manifest.
 
 `opencode.json` registers `skills/` under `skills.paths` so opencode loads the collection while this repository itself is open, which is for working on the skills rather than distributing them. opencode users install through the skills CLI's opencode target, and opencode exposes every discovered skill as a slash command on its own, so this repository carries no opencode command wrappers.
 
@@ -50,7 +50,8 @@ Two copies pass that test because each skill needs them whole, and they must mat
 
 A user-invoked skill may invoke model-invoked skills, but it can never reach another user-invoked skill. That rule decides the setting; it is not a preference:
 
-- `interface-review`, `variant`, `break`, `state-machine`, `explain-interface` and `afk` are the user-invoked skills. Each carries `disable-model-invocation: true` in its frontmatter **and** `policy.allow_implicit_invocation: false` in its `agents/openai.yaml`. Those are the Claude Code and Codex halves of the same switch and must be set together, or the skill behaves differently per harness.
+- `variant`, `break`, `state-machine`, `explain-interface` and `afk` are the user-invoked skills. Each carries `disable-model-invocation: true` in its frontmatter **and** `policy.allow_implicit_invocation: false` in its `agents/openai.yaml`. Those are the Claude Code and Codex halves of the same switch and must be set together, or the skill behaves differently per harness.
+- `interface-review` is model-invoked so a requested change review can reach it through `better-interface`. Ordinary implementation requests do not start a separate review.
 - `variant` is user-invoked because a design exploration is never something to start on someone's behalf. It writes throwaway code and then asks a question only a person can answer, so an agent firing it unprompted produces work nobody asked for and a harness nobody deletes.
 - `break` is user-invoked for the same reason as `variant`: it writes a throwaway harness, and an agent firing it after every component it touches would litter the repo with test pages.
 - `state-machine` is user-invoked for the same reason as `break`: it writes a throwaway page with mock data and a switcher. Only the person working on the visuals knows when that setup is wanted or done.
@@ -59,7 +60,7 @@ A user-invoked skill may invoke model-invoked skills, but it can never reach ano
 - The domain skills and `better-interface` are model-invoked, because something must reach them: `better-interface` routes to every domain skill, and `interface-review` hands its review up to `better-interface`.
 - `build-design` is model-invoked although nothing routes to it, because a design link with a request to build it is already a direct request. It writes production code the user asked for, not a throwaway harness.
 - `teardown` is model-invoked because a request for a technical drawing already authorizes creating its artifact. It produces static drawings with a local preview and export page.
-- `better-interface` therefore cannot start `interface-review`. Where it would want to, it asks the user to run it. Making `better-interface` user-invoked too would sever the upward handoff and force `interface-review` to restate severity, the cap, the format and the verdict.
+- `better-interface` starts `interface-review` for a fresh change-review request. A completed handoff returns to consolidation without routing again.
 
 ### Rule ownership
 
@@ -88,7 +89,7 @@ When a concern crosses domains, keep the rule in the owner above and let other s
 - `better-layout` owns logical CSS properties and spatial mirroring; `better-typography` owns language metadata, punctuation and mixed-direction text.
 - `better-typography` owns truncation mechanics; `better-layout` owns whether the surrounding layout has room or an expansion affordance; `better-writing` owns the source copy.
 - `better-accessibility` owns reduced-motion requirements; `better-ui` owns the optional animation recipe used when motion is appropriate.
-- `interface-review` owns what to review when the scope is a diff; `better-interface` owns how that review is routed, ranked, consolidated and reported. The dependency runs one way: `interface-review` hands its scope and statuses up, and `better-interface` ranks, caps and issues the verdict. Neither file may restate the other's rules.
+- `interface-review` owns what to review when the scope is a diff; `better-interface` owns how that review is routed, ranked, consolidated and reported. Scope resolution precedes consolidation: `interface-review` hands its scope and statuses up, and `better-interface` ranks, caps and issues the verdict. Neither file may restate the other's rules.
 
 ## Authoring conventions
 
@@ -96,7 +97,7 @@ When a concern crosses domains, keep the rule in the owner above and let other s
 - Match the degree of prescription to the decision: requirements may be unconditional, while design heuristics name the context and escape conditions before giving exact recipe values.
 - Skills instruct agents to match the target project's existing styling system (Tailwind vs. plain CSS vs. CSS-in-JS) rather than impose one.
 - Frontmatter `description` is how a skill gets found, and it is one or two plain sentences saying what the skill does for the user. It loads on every turn, so it earns harder pruning than the body. No trigger list: a keyword pile is a worse match signal than a clear sentence, and it goes stale the moment the skill's scope moves. The wording is the same as the skill's line in `README.md`, so changing one means changing both. The README may bold key terms and append `User-invoked.` for a user-invoked skill, and nothing else.
-- Skills that own a domain use the `better-*` prefix. A user-invoked review entry point may drop it when a plainer name reads better on the command line, as `interface-review` does.
+- Skills that own a domain use the `better-*` prefix. A change-review entry point may drop it when a plainer name reads better on the command line, as `interface-review` does.
 - A skill's name appears in three places: its directory, its frontmatter `name` and `display_name` in its `agents/openai.yaml`. Renaming means changing all three, then `grep`ing for the old name to confirm nothing survived.
 - Prefer counts and lists that cannot go stale. Say "every skill in this repository" rather than a number the next skill invalidates.
 - Straight quotes, sentence-case headings. No em dashes and no parentheses or mid-sentence colons standing in for one: end the sentence or use a comma. En dashes are for numeric ranges only.

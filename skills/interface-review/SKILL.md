@@ -1,12 +1,13 @@
 ---
 name: interface-review
-disable-model-invocation: true
 description: Reviews a branch, pull request or uncommitted change for the interface problems it introduced or regressed, across accessibility, layout, writing, typography, color and UI.
 ---
 
 # Interface review
 
 This skill reviews a change rather than a screen. It resolves the scope, expands the changed files to the surfaces they affect, reads both sides of the diff and classifies every finding.
+
+Run when the user requests an interface review of a change, including a handoff from `better-interface`. An implementation request alone does not authorize a separate review.
 
 It owns the scope, the classification and the change-scoped report. Domain rules belong to the `better-*` skills. Severity, consolidation, coverage, the cap and the verdict belong to `better-interface`, which this skill hands the review to.
 

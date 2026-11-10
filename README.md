@@ -6,6 +6,8 @@
 
 A collection of agent skills that cover UI, typography, colors, accessibility, layout, product writing and help you build a great interface.
 
+This local checkout uses `interfaces-local` for its review-routing patch. Install `interfaces@interfaces-local` to use it; the upstream installation instructions below describe the unmodified distribution.
+
 These skills cover topics that I write about on [my personal website](https://jakub.kr/) and my design engineering magazine, [Interfaces](https://interfaces.dev/).
 
 ## Skills that help build great interfaces
@@ -17,7 +19,7 @@ These skills cover topics that I write about on [my personal website](https://ja
 - [**better-accessibility**](skills/better-accessibility/SKILL.md): Reviews and fixes **keyboard and focus behavior**, **ARIA**, **accessible names**, **forms**, **screen-reader announcements**, **motion** and **zoom** against WCAG 2.2.
 - [**better-layout**](skills/better-layout/SKILL.md): Sets **grouping**, **alignment**, **reading order**, **responsive structure** and room for translated text, so a layout holds up when it is resized, translated or mirrored.
 - [**better-writing**](skills/better-writing/SKILL.md): Writes and reviews interface copy, from **labels** and **errors** to **empty states** and **confirmations**, so it matches the product's voice and tells people what to do next.
-- [**interface-review**](skills/interface-review/SKILL.md): Reviews a **branch**, **pull request** or **uncommitted change** for the interface problems it introduced or regressed, across accessibility, layout, writing, typography, color and UI. User-invoked.
+- [**interface-review**](skills/interface-review/SKILL.md): Reviews a **branch**, **pull request** or **uncommitted change** for the interface problems it introduced or regressed, across accessibility, layout, writing, typography, color and UI.
 - [**explain-interface**](skills/explain-interface/SKILL.md): Explains how a website, a visual effect or an animation was built, from a **live URL** or a **screenshot**. User-invoked.
 - [**break**](skills/break/SKILL.md): Renders a component you choose under **every scenario** that can reach it on a temporary page and stress tests it. User-invoked.
 - [**build-design**](skills/build-design/SKILL.md): Builds UI from a Figma file or a design image so it matches the design, using the project's existing tokens and components.
